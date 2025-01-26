@@ -36,12 +36,8 @@ export type { IUniswapV2Router01 } from "./@uniswap/v2-periphery/contracts/inter
 export { IUniswapV2Router01__factory } from "./factories/@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router01__factory";
 export type { IUniswapV2Router02 } from "./@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02";
 export { IUniswapV2Router02__factory } from "./factories/@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02__factory";
-export type { IKekBaggiesMutualFund } from "./contracts/EthRamp.sol/IKekBaggiesMutualFund";
-export { IKekBaggiesMutualFund__factory } from "./factories/contracts/EthRamp.sol/IKekBaggiesMutualFund__factory";
 export type { ILairryFinkFund } from "./contracts/EthRamp.sol/ILairryFinkFund";
 export { ILairryFinkFund__factory } from "./factories/contracts/EthRamp.sol/ILairryFinkFund__factory";
-export type { KekBaggiesMutualFundETHRamp } from "./contracts/EthRamp.sol/KekBaggiesMutualFundETHRamp";
-export { KekBaggiesMutualFundETHRamp__factory } from "./factories/contracts/EthRamp.sol/KekBaggiesMutualFundETHRamp__factory";
 export type { LairryFinkETHRamp } from "./contracts/EthRamp.sol/LairryFinkETHRamp";
 export { LairryFinkETHRamp__factory } from "./factories/contracts/EthRamp.sol/LairryFinkETHRamp__factory";
 export type { LairryFinkFund } from "./contracts/LairryFink.sol/LairryFinkFund";
