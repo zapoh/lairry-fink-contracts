@@ -605,6 +605,47 @@
       "artifacts": [
         "Errors"
       ]
+    },
+    "/Users/fahimzapoh/Lairry-Fink/smart-contracts/contracts/EthRamp.sol": {
+      "lastModificationDate": 1737930375521,
+      "contentHash": "ab2e043fc69465d1b0285548b44d47e3",
+      "sourceName": "contracts/EthRamp.sol",
+      "solcConfig": {
+        "version": "0.8.25",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol",
+        "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.25"
+      ],
+      "artifacts": [
+        "ILairryFinkFund",
+        "LairryFinkETHRamp"
+      ]
     }
   }
 }

@@ -70,6 +70,22 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IUniswapV2Router02__factory>;
     getContractFactory(
+      name: "IKekBaggiesMutualFund",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IKekBaggiesMutualFund__factory>;
+    getContractFactory(
+      name: "ILairryFinkFund",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ILairryFinkFund__factory>;
+    getContractFactory(
+      name: "KekBaggiesMutualFundETHRamp",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.KekBaggiesMutualFundETHRamp__factory>;
+    getContractFactory(
+      name: "LairryFinkETHRamp",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.LairryFinkETHRamp__factory>;
+    getContractFactory(
       name: "LairryFinkFund",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.LairryFinkFund__factory>;
@@ -149,6 +165,26 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IUniswapV2Router02>;
     getContractAt(
+      name: "IKekBaggiesMutualFund",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IKekBaggiesMutualFund>;
+    getContractAt(
+      name: "ILairryFinkFund",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ILairryFinkFund>;
+    getContractAt(
+      name: "KekBaggiesMutualFundETHRamp",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.KekBaggiesMutualFundETHRamp>;
+    getContractAt(
+      name: "LairryFinkETHRamp",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.LairryFinkETHRamp>;
+    getContractAt(
       name: "LairryFinkFund",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -216,6 +252,22 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IUniswapV2Router02>;
     deployContract(
+      name: "IKekBaggiesMutualFund",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IKekBaggiesMutualFund>;
+    deployContract(
+      name: "ILairryFinkFund",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ILairryFinkFund>;
+    deployContract(
+      name: "KekBaggiesMutualFundETHRamp",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.KekBaggiesMutualFundETHRamp>;
+    deployContract(
+      name: "LairryFinkETHRamp",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.LairryFinkETHRamp>;
+    deployContract(
       name: "LairryFinkFund",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.LairryFinkFund>;
@@ -294,6 +346,26 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IUniswapV2Router02>;
+    deployContract(
+      name: "IKekBaggiesMutualFund",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IKekBaggiesMutualFund>;
+    deployContract(
+      name: "ILairryFinkFund",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ILairryFinkFund>;
+    deployContract(
+      name: "KekBaggiesMutualFundETHRamp",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.KekBaggiesMutualFundETHRamp>;
+    deployContract(
+      name: "LairryFinkETHRamp",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.LairryFinkETHRamp>;
     deployContract(
       name: "LairryFinkFund",
       args: any[],
