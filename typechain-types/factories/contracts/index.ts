@@ -3,3 +3,4 @@
 /* eslint-disable */
 export * as ethRampSol from "./EthRamp.sol";
 export * as lairryFinkSol from "./LairryFink.sol";
+export * as lairryFinkEthSol from "./LairryFinkEth.sol";

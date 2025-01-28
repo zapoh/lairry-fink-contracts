@@ -70,6 +70,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IUniswapV2Router02__factory>;
     getContractFactory(
+      name: "IWETH",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IWETH__factory>;
+    getContractFactory(
       name: "ILairryFinkFund",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ILairryFinkFund__factory>;
@@ -77,6 +81,14 @@ declare module "hardhat/types/runtime" {
       name: "LairryFinkETHRamp",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.LairryFinkETHRamp__factory>;
+    getContractFactory(
+      name: "LairryFinkFund",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.LairryFinkFund__factory>;
+    getContractFactory(
+      name: "LairryFinkShareToken",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.LairryFinkShareToken__factory>;
     getContractFactory(
       name: "LairryFinkFund",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -157,6 +169,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IUniswapV2Router02>;
     getContractAt(
+      name: "IWETH",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IWETH>;
+    getContractAt(
       name: "ILairryFinkFund",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -166,6 +183,16 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.LairryFinkETHRamp>;
+    getContractAt(
+      name: "LairryFinkFund",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.LairryFinkFund>;
+    getContractAt(
+      name: "LairryFinkShareToken",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.LairryFinkShareToken>;
     getContractAt(
       name: "LairryFinkFund",
       address: string | ethers.Addressable,
@@ -234,6 +261,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IUniswapV2Router02>;
     deployContract(
+      name: "IWETH",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IWETH>;
+    deployContract(
       name: "ILairryFinkFund",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ILairryFinkFund>;
@@ -241,6 +272,14 @@ declare module "hardhat/types/runtime" {
       name: "LairryFinkETHRamp",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.LairryFinkETHRamp>;
+    deployContract(
+      name: "LairryFinkFund",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.LairryFinkFund>;
+    deployContract(
+      name: "LairryFinkShareToken",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.LairryFinkShareToken>;
     deployContract(
       name: "LairryFinkFund",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -321,6 +360,11 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IUniswapV2Router02>;
     deployContract(
+      name: "IWETH",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IWETH>;
+    deployContract(
       name: "ILairryFinkFund",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -330,6 +374,16 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.LairryFinkETHRamp>;
+    deployContract(
+      name: "LairryFinkFund",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.LairryFinkFund>;
+    deployContract(
+      name: "LairryFinkShareToken",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.LairryFinkShareToken>;
     deployContract(
       name: "LairryFinkFund",
       args: any[],

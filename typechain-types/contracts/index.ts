@@ -5,3 +5,5 @@ import type * as ethRampSol from "./EthRamp.sol";
 export type { ethRampSol };
 import type * as lairryFinkSol from "./LairryFink.sol";
 export type { lairryFinkSol };
+import type * as lairryFinkEthSol from "./LairryFinkEth.sol";
+export type { lairryFinkEthSol };
