@@ -282,8 +282,11 @@ function withdrawDepositFees(address payable to, uint256 amount) public onlyOwne
         uint256 netAssetValue;
         uint256 sharesOutstanding = getSharesOutstanding();
         if (sharesOutstanding == 0) {
-            // Initial deposit - establish share price of 1 reserveToken/share
-            shares = amountLessFee / (10 ** WETH_DECIMALS);
+
+            uint256 SCALAR = 100_000_000;
+
+            // Initial deposit - establish share price of 1 ETH = 100,000,000 share
+            shares = (amountLessFee * SCALAR) / (10 ** WETH_DECIMALS);
             sharesOutstanding = shares;
             netAssetValue = amountLessFee;
         } else {
