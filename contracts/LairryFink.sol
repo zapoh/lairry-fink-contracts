@@ -6,6 +6,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
+import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol"; 
+
 
 contract LairryFinkShareToken is ERC20, Ownable {
     constructor(
@@ -42,17 +44,14 @@ contract LairryFinkFund is Ownable {
 
     uint8 private constant BASIS_POINTS = 4;
 
+    uint8 private constant WETH_DECIMALS = 18;
+
+
     // Pool reserve token 
     // This is the base currency used by the fund. It is the currency through which users
     // conduct deposits and withdrawals, and the unit in which the fund's assets are valued.
-    ERC20 private immutable reserveToken;
+    IWETH private immutable WETH;
 
-   
-    // Pool share token
-    // The pool share token is used to determine shareholder equity in the mutual fund.
-    // These share tokens function exactly like shares in a traditional open-ended mutual fund.
-    // The share token is deployed by the pool contract itself in the constructor.
-    // Share tokens can be bought/sold directly from/to the fund contract.
     // Share token price = (NetAssetValue / SharesOutstanding)
     // The contract mints share tokens on share purchase and burns share tokens on share sale.
     LairryFinkShareToken private immutable shareToken;
@@ -61,7 +60,7 @@ contract LairryFinkFund is Ownable {
     // Withdrawals will still be enabled for all existing shareholders
     bool private depositsEnabled;
 
-    // Minimum amount of reserve tokens that can be deposited into the fund
+    // Minimum amount of tokens that can be deposited into the fund
     // This is necessary because if too few tokens are deposited, we may
     // not be able to allocate them appropriately across the fund's portfolio allocation.
     uint256 private minimumDeposit;
@@ -86,8 +85,13 @@ contract LairryFinkFund is Ownable {
     mapping(address => uint256) private allocation;
     address[] private assets;
 
+    // Add new state variable next to depositFee
+    uint256 private withdrawalFee;
+    uint256 withdrawalFeeBalance;
+    uint256 private immutable creationWithdrawalFee;
+
     constructor(
-        address _reserveTokenAddress,
+        address _wethAddress,   
         string memory _shareTokenName,
         string memory _shareTokenSymbol,
         address _uniswapV2Router02Address,
@@ -95,11 +99,12 @@ contract LairryFinkFund is Ownable {
         bool _depositsEnabled,
         uint256 _minimumDeposit,
         uint256 _slippageTolerance,
-        uint256 _depositFee
+        uint256 _depositFee,
+        uint256 _withdrawalFee
     )
         Ownable(msg.sender)
     {
-        reserveToken = ERC20(_reserveTokenAddress);
+        WETH = IWETH(_wethAddress);
         shareToken = new LairryFinkShareToken(
             _shareTokenName,
             _shareTokenSymbol
@@ -112,18 +117,19 @@ contract LairryFinkFund is Ownable {
         slippageTolerance = _slippageTolerance;
         depositFee = _depositFee;
         creationDepositFee = _depositFee;
+        withdrawalFee = _withdrawalFee;
+        creationWithdrawalFee = _withdrawalFee;
     }
-
     function getReserveTokenAddress() public view returns (address) {
-        return address(reserveToken);
+        return address(WETH);
     }
 
-    function getReserveTokenBalance() public view returns (uint256) {
-        uint256 reserveTokenBalance = reserveToken.balanceOf(address(this));
-        if (reserveTokenBalance <= depositFeeBalance) {
+      function getReserveTokenBalance() public view returns (uint256) {
+        uint256 wethBalance = IERC20(address(WETH)).balanceOf(address(this));
+        if (wethBalance <= depositFeeBalance + withdrawalFeeBalance) {
             return 0;
         }
-        return reserveTokenBalance - depositFeeBalance;
+        return wethBalance - depositFeeBalance - withdrawalFeeBalance;
     }
 
     function getShareTokenAddress() public view returns (address) {
@@ -195,12 +201,26 @@ contract LairryFinkFund is Ownable {
         return depositFeeBalance;
     }
 
-    function withdrawDepositFees(address to, uint256 amount) public onlyOwner {
-        require(depositFeeBalance > 0, "Current fee balance is 0.");
-        require(amount <= depositFeeBalance, "Requested withdrawal amount exceeds fee balance.");
+    function getWithdrawalFeeBalance() public view returns (uint256) {
+    return withdrawalFeeBalance;
+}
 
-        depositFeeBalance -= amount;
-        reserveToken.safeTransfer(to, amount);
+    function getWithdrawalFee() public view returns (uint256) {
+        return withdrawalFee;
+    }
+
+    function setWithdrawalFee(uint256 _withdrawalFee) public onlyOwner {
+        require(_withdrawalFee <= creationWithdrawalFee, "Fee cannot be set higher than creation fee");
+        withdrawalFee = _withdrawalFee;
+    }
+
+    function withdrawDepositFees(address to, uint256 amount) public onlyOwner {
+        require(amount <= depositFeeBalance + withdrawalFeeBalance, "Withdrawal amount exceeds fee balance");
+        depositFeeBalance = depositFeeBalance + withdrawalFeeBalance - amount;
+        withdrawalFeeBalance = 0;
+        WETH.withdraw(amount);
+        (bool success, ) = payable(to).call{value: amount}("");
+        require(success, "ETH transfer failed");
     }
 
     // Return a tuple of arrays for current asset information:
@@ -259,26 +279,23 @@ contract LairryFinkFund is Ownable {
     // Finally, mint for the depositor a number of share tokens equal to the number of shares they bought.
     //
     // Emits a {Deposit} event on success.
-    function deposit(uint256 amount) public {
+    function deposit() public payable {
         require(
             depositsEnabled || msg.sender == this.owner(),
             "Deposits are temporarily disabled."
         );
 
         require(
-            amount >= minimumDeposit,
+        msg.value >= minimumDeposit,
             "Deposit amount is less than the minimum deposit."
         );
-
-        require(
-            reserveToken.allowance(msg.sender, address(this)) >= amount,
-            "Reserve token allowance is less than deposit amount."
-        );
+   // Wrap ETH to WETH
+        WETH.deposit{value: msg.value}();
  
         // Determine deposit fee
         uint256 feeMax = 10**BASIS_POINTS;
-        uint256 fee = depositFee * amount / feeMax;
-        uint256 amountLessFee = amount - fee;
+        uint256 fee = depositFee * msg.value / feeMax;
+        uint256 amountLessFee = msg.value - fee;
         depositFeeBalance += fee;
 
         // Determine share purchase amount
@@ -286,8 +303,11 @@ contract LairryFinkFund is Ownable {
         uint256 netAssetValue;
         uint256 sharesOutstanding = getSharesOutstanding();
         if (sharesOutstanding == 0) {
-            // Initial deposit - establish share price of 1 reserveToken/share
-            shares = amountLessFee / (10 ** reserveToken.decimals());
+
+            uint256 SCALAR = 100_000;
+
+            // Initial deposit - establish share price of 1 ETH = 100,000 share
+            shares = (amountLessFee * SCALAR) / (10 ** WETH_DECIMALS);
             sharesOutstanding = shares;
             netAssetValue = amountLessFee;
         } else {
@@ -301,25 +321,27 @@ contract LairryFinkFund is Ownable {
         uint256 shareValue = shares * netAssetValue / sharesOutstanding;
         uint256 change = amountLessFee - shareValue;
 
-        // Transfer reserve tokens to fund contract
-        reserveToken.safeTransferFrom(
-            msg.sender,
-            address(this),
-            amount - change
-        );
+       // If there's change, unwrap WETH to ETH and return it
+    if (change > 0) {
+        WETH.withdraw(change);
+        (bool success, ) = msg.sender.call{value: change}("");
+        require(success, "ETH transfer failed");
+    }
 
-        // Buy assets with deposited funds
+
+
+   // Buy assets with deposited WETH
         IUniswapV2Router02 router = IUniswapV2Router02(uniswapV2Router02Address);
         for (uint256 i = 0; i < assets.length; i++) {
             address tokenAddress = assets[i];
-            uint256 reserveTokenAmount = allocation[tokenAddress] * amountLessFee / 10**BASIS_POINTS;
-            if (reserveTokenAmount == 0) {
+            uint256 wethAmount = allocation[tokenAddress] * (amountLessFee - change) / 10**BASIS_POINTS;
+            if (wethAmount == 0) {
                 continue;
             }
             _buy(
                 router,
                 tokenAddress,
-                reserveTokenAmount
+                wethAmount
             );
         }
 
@@ -329,53 +351,62 @@ contract LairryFinkFund is Ownable {
         emit Deposit(msg.sender, shares, shareValue);
     }
 
+     // Add receive function to handle direct ETH transfers
+    receive() external payable {
+        // Only accept ETH from WETH contract (for withdrawals)
+        require(msg.sender == address(WETH), "Direct ETH transfers not allowed");
+    }
+
+    // Add fallback function to prevent accidental ETH transfers
+    fallback() external payable {
+        revert("Direct ETH transfers not allowed");
+    }
+
     // Sell shares
     //
-    // Liquidate shareholder assets for reserve tokens proportional to the shareholder's equity stake.
+    // Liquidate shareholder assets for WETH proportional to the shareholder's equity stake.
     // Send the liquidated reserve tokens to the shareholder.
     // Also send the shareholder's share of reserve tokens to the shareholder.
     // Lastly, burn a number of the shareholder's share tokens equal to the number of shares they sold.
     //
     //
     // Emits a {Withdraw} event on success.
-    function withdraw(uint256 shares, address to) public {
+        function withdraw(uint256 shares, address payable to) public {
         uint256 sharesOutstanding = getSharesOutstanding();
-        require(
-            sharesOutstanding > 0,
-            "No shares outstanding."
-        );
+        require(sharesOutstanding > 0, "No shares outstanding.");
         require(shares > 0, "You must sell at least one share.");
         uint256 shareBalance = getShareBalance(msg.sender);
         require(shareBalance >= shares, "Sell amount is greater than current share balance.");
         uint256 shareValue = shares * getSharePrice();
 
-        // Sell shareholder's share of assets
+        // Calculate withdrawal fee
+        uint256 feeMax = 10**BASIS_POINTS;
+        uint256 fee = withdrawalFee * shareValue / feeMax;
+        withdrawalFeeBalance += fee;
+
+        // Sell assets first
         IUniswapV2Router02 router = IUniswapV2Router02(uniswapV2Router02Address);
         for (uint256 i = 0; i < assets.length; i++) {
             address tokenAddress = assets[i];
             IERC20 token = IERC20(tokenAddress);
             uint256 sellAmount = shares * token.balanceOf(address(this)) / sharesOutstanding;
-            _sell(
-                router,
-                tokenAddress,
-                sellAmount,
-                to
-            );
+            if (sellAmount > 0) {
+                _sell(router, tokenAddress, sellAmount, address(this));
+            }
         }
 
-        // Transfer the shareholder's share of reserve tokens to shareholder
-        uint256 reserveWithdrawalAmount = shares * getReserveTokenBalance() / sharesOutstanding;
-        if (reserveWithdrawalAmount > 0) {
-            reserveToken.safeTransfer(
-                to,
-                reserveWithdrawalAmount
-            );
+        // Handle WETH portion (remove fee deduction)
+        uint256 wethWithdrawalAmount = shares * getReserveTokenBalance() / sharesOutstanding;
+        if (wethWithdrawalAmount > 0) {
+            WETH.withdraw(wethWithdrawalAmount);
+            (bool success, ) = to.call{value: wethWithdrawalAmount}("");
+            require(success, "ETH transfer failed");
         }
 
-        // Burn shareholder's sold shares
+        // Burn shares
         shareToken.burn(msg.sender, shares);
 
-        emit Withdraw(msg.sender, to, shares, shareValue);
+        emit Withdraw(msg.sender, to, shares, shareValue - fee);
     }
 
     // Set the pool's allocation for the asset specified by `tokenAddress`.
@@ -425,6 +456,7 @@ contract LairryFinkFund is Ownable {
                     address(this)
                 );
             }
+
         }
 
         // Update assets array
@@ -455,35 +487,32 @@ contract LairryFinkFund is Ownable {
         return totalAllocation;
     }
 
-    // Get path for swapping reserve token -> asset on uniswap
+      // Get path for swapping WETH -> asset on uniswap
     function _buyPath(IUniswapV2Router02 router, address tokenAddress) internal view returns (address[] memory) {
         address _weth = router.WETH();
         if (tokenAddress == _weth) {
-            address[] memory wethPath = new address[](2);
-            wethPath[0] = address(reserveToken);
-            wethPath[1] = _weth;
+            address[] memory wethPath = new address[](1);
+            wethPath[0] = _weth;
             return wethPath;
         }
-        address[] memory path = new address[](3);
-        path[0] = address(reserveToken);
-        path[1] = _weth;
-        path[2] = tokenAddress;
+        address[] memory path = new address[](2);
+        path[0] = address(WETH);
+        path[1] = tokenAddress;
         return path;
     }
 
     // Get path for swapping asset -> reserve token on uniswap
+     // Get path for swapping asset -> WETH on uniswap
     function _sellPath(IUniswapV2Router02 router, address tokenAddress) internal view returns (address[] memory) {
         address _weth = router.WETH();
         if (tokenAddress == _weth) {
-            address[] memory wethPath = new address[](2);
+            address[] memory wethPath = new address[](1);
             wethPath[0] = _weth;
-            wethPath[1] = address(reserveToken);
             return wethPath;
         }
-        address[] memory path = new address[](3);
+        address[] memory path = new address[](2);
         path[0] = tokenAddress;
-        path[1] = _weth;
-        path[2] = address(reserveToken);
+        path[1] = address(WETH);
         return path;
     }
 
@@ -506,13 +535,14 @@ contract LairryFinkFund is Ownable {
 
     // Swap `amount` reserve tokens for the token specified by `tokenAddress`,
     // factoring in slippage tolerance.
-    // There must be a path from reserveToken -> WETH -> token on uniswap, otherwise
+    // There must be a path from  WETH -> token on uniswap, otherwise
     // this operation will fail.
+   
     function _buy(IUniswapV2Router02 router, address tokenAddress, uint256 amount) internal {
-        require(amount <= getReserveTokenBalance(), "Insufficient reserve token balance.");
+        require(amount <= getReserveTokenBalance(), "Insufficient WETH balance.");
         uint256 minimumOut = _calculateSlippage(_buyAmount(router, tokenAddress, amount));
         address[] memory path = _buyPath(router, tokenAddress);
-        reserveToken.approve(uniswapV2Router02Address, amount);
+        IERC20(address(WETH)).approve(uniswapV2Router02Address, amount);
         router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
             amount,
             minimumOut,
@@ -535,20 +565,22 @@ contract LairryFinkFund is Ownable {
 
     // Swap `amount` of the token specified by `tokenAddress` for reserve tokens,
     // factoring in slippage tolerance.
-    // There must be a path from token -> WETH -> reserveToken on uniswap, otherwise
+    // There must be a path from token -> WETH on uniswap, otherwise
     // this operation will fail.
-    function _sell(IUniswapV2Router02 router, address tokenAddress, uint256 amount, address to) internal {
-        IERC20 token = IERC20(tokenAddress);
-        require(amount <= token.balanceOf(address(this)), "Insufficient token balance.");
-        uint256 minimumOut = _calculateSlippage(_sellAmount(router, tokenAddress, amount));
-        address[] memory path = _sellPath(router, tokenAddress);
-        token.approve(uniswapV2Router02Address, amount);
-        router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
-            amount,
-            minimumOut,
-            path,
-            to,
-            block.timestamp + deadlineOffset
-        );
+function _sell(IUniswapV2Router02 router, address tokenAddress, uint256 amount, address to) internal {
+    IERC20 token = IERC20(tokenAddress);
+    require(amount <= token.balanceOf(address(this)), "Insufficient token balance.");
+    uint256 minimumOut = _calculateSlippage(_sellAmount(router, tokenAddress, amount));
+    address[] memory path = _sellPath(router, tokenAddress);
+    token.approve(uniswapV2Router02Address, amount);
+    router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+        amount,
+        minimumOut,
+        path,
+        to,
+        block.timestamp + deadlineOffset
+    );
     }
 }
+
+

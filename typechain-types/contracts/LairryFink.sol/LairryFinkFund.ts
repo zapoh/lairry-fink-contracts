@@ -43,6 +43,8 @@ export interface LairryFinkFundInterface extends Interface {
       | "getSharesOutstanding"
       | "getSlippageTolerance"
       | "getTotalAllocation"
+      | "getWithdrawalFee"
+      | "getWithdrawalFeeBalance"
       | "owner"
       | "renounceOwnership"
       | "setAllocation"
@@ -51,6 +53,7 @@ export interface LairryFinkFundInterface extends Interface {
       | "setDepositsEnabled"
       | "setMinimumDeposit"
       | "setSlippageTolerance"
+      | "setWithdrawalFee"
       | "transferOwnership"
       | "withdraw"
       | "withdrawDepositFees"
@@ -64,10 +67,7 @@ export interface LairryFinkFundInterface extends Interface {
       | "Withdraw"
   ): EventFragment;
 
-  encodeFunctionData(
-    functionFragment: "deposit",
-    values: [BigNumberish]
-  ): string;
+  encodeFunctionData(functionFragment: "deposit", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "getCreationDepositFee",
     values?: undefined
@@ -132,6 +132,14 @@ export interface LairryFinkFundInterface extends Interface {
     functionFragment: "getTotalAllocation",
     values?: undefined
   ): string;
+  encodeFunctionData(
+    functionFragment: "getWithdrawalFee",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getWithdrawalFeeBalance",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
@@ -159,6 +167,10 @@ export interface LairryFinkFundInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "setSlippageTolerance",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setWithdrawalFee",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -239,6 +251,14 @@ export interface LairryFinkFundInterface extends Interface {
     functionFragment: "getTotalAllocation",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getWithdrawalFee",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getWithdrawalFeeBalance",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
@@ -266,6 +286,10 @@ export interface LairryFinkFundInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setSlippageTolerance",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setWithdrawalFee",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -398,7 +422,7 @@ export interface LairryFinkFund extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
-  deposit: TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;
+  deposit: TypedContractMethod<[], [void], "payable">;
 
   getCreationDepositFee: TypedContractMethod<[], [bigint], "view">;
 
@@ -440,6 +464,10 @@ export interface LairryFinkFund extends BaseContract {
 
   getTotalAllocation: TypedContractMethod<[], [bigint], "view">;
 
+  getWithdrawalFee: TypedContractMethod<[], [bigint], "view">;
+
+  getWithdrawalFeeBalance: TypedContractMethod<[], [bigint], "view">;
+
   owner: TypedContractMethod<[], [string], "view">;
 
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
@@ -480,6 +508,12 @@ export interface LairryFinkFund extends BaseContract {
     "nonpayable"
   >;
 
+  setWithdrawalFee: TypedContractMethod<
+    [_withdrawalFee: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
   transferOwnership: TypedContractMethod<
     [newOwner: AddressLike],
     [void],
@@ -504,7 +538,7 @@ export interface LairryFinkFund extends BaseContract {
 
   getFunction(
     nameOrSignature: "deposit"
-  ): TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;
+  ): TypedContractMethod<[], [void], "payable">;
   getFunction(
     nameOrSignature: "getCreationDepositFee"
   ): TypedContractMethod<[], [bigint], "view">;
@@ -558,6 +592,12 @@ export interface LairryFinkFund extends BaseContract {
     nameOrSignature: "getTotalAllocation"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
+    nameOrSignature: "getWithdrawalFee"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "getWithdrawalFeeBalance"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
     nameOrSignature: "owner"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
@@ -589,6 +629,9 @@ export interface LairryFinkFund extends BaseContract {
     [void],
     "nonpayable"
   >;
+  getFunction(
+    nameOrSignature: "setWithdrawalFee"
+  ): TypedContractMethod<[_withdrawalFee: BigNumberish], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "transferOwnership"
   ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;

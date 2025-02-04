@@ -7,13 +7,14 @@ async function main() {
   const UNISWAP_ROUTER = "0xeE567Fe1712Faf6149d80dA1E6934E354124CfE3";
   
   // Fund parameters
-  const SHARE_TOKEN_NAME = "LairryFink Share Token";
+  const SHARE_TOKEN_NAME = "Lairry Fink Share Token";
   const SHARE_TOKEN_SYMBOL = "LFST";
   const DEADLINE_OFFSET = 300; // 5 minutes
   const DEPOSITS_ENABLED = true;
   const MINIMUM_DEPOSIT = ethers.parseEther("0.001"); //
-  const SLIPPAGE_TOLERANCE = 500; // 0.5%
+  const SLIPPAGE_TOLERANCE = 200; // 2%
   const DEPOSIT_FEE = 100; // 1%
+  const WITHDRAWAL_FEE = 100; // 1%
 
   console.log("Deploying LairryFink Fund to Sepolia...");
 
@@ -27,7 +28,8 @@ async function main() {
     DEPOSITS_ENABLED,
     MINIMUM_DEPOSIT,
     SLIPPAGE_TOLERANCE,
-    DEPOSIT_FEE
+    DEPOSIT_FEE,
+    WITHDRAWAL_FEE
   ]);
 
   await lairryFink.waitForDeployment();
@@ -43,27 +45,28 @@ async function main() {
   console.log("Waiting for block confirmations...");
   await lairryFink.deploymentTransaction()?.wait(5);
 
-  // // Verify the contract on Etherscan
-  // console.log("Verifying contract on Etherscan...");
-  // try {
-  //   await run("verify:verify", {
-  //     address: deployedAddress,
-  //     constructorArguments: [
-  //       RESERVE_TOKEN,
-  //       SHARE_TOKEN_NAME,
-  //       SHARE_TOKEN_SYMBOL,
-  //       UNISWAP_ROUTER,
-  //       DEADLINE_OFFSET,
-  //       DEPOSITS_ENABLED, 
-  //       MINIMUM_DEPOSIT,
-  //       SLIPPAGE_TOLERANCE,
-  //       DEPOSIT_FEE
-  //     ],
-  //   });
-  //   console.log("Contract verified successfully");
-  // } catch (error) {
-  //   console.log("Error verifying contract:", error);
-  // }
+  // Verify the contract on Etherscan
+  console.log("Verifying contract on Etherscan...");
+  try {
+    await run("verify:verify", {
+      address: deployedAddress,
+      constructorArguments: [
+        RESERVE_TOKEN,
+        SHARE_TOKEN_NAME,
+        SHARE_TOKEN_SYMBOL,
+        UNISWAP_ROUTER,
+        DEADLINE_OFFSET,
+        DEPOSITS_ENABLED, 
+        MINIMUM_DEPOSIT,
+        SLIPPAGE_TOLERANCE,
+        DEPOSIT_FEE,
+        WITHDRAWAL_FEE
+      ],
+    });
+    console.log("Contract verified successfully");
+  } catch (error) {
+    console.log("Error verifying contract:", error);
+  }
 
   // Log all important addresses and parameters
   console.log("\nDeployment Summary:");
@@ -84,3 +87,4 @@ main()
     console.error(error);
     process.exit(1);
   }); 
+
