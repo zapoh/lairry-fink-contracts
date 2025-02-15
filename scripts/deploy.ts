@@ -45,28 +45,28 @@ async function main() {
   console.log("Waiting for block confirmations...");
   await lairryFink.deploymentTransaction()?.wait(5);
 
-  // Verify the contract on Etherscan
-  console.log("Verifying contract on Etherscan...");
-  try {
-    await run("verify:verify", {
-      address: deployedAddress,
-      constructorArguments: [
-        RESERVE_TOKEN,
-        SHARE_TOKEN_NAME,
-        SHARE_TOKEN_SYMBOL,
-        UNISWAP_ROUTER,
-        DEADLINE_OFFSET,
-        DEPOSITS_ENABLED, 
-        MINIMUM_DEPOSIT,
-        SLIPPAGE_TOLERANCE,
-        DEPOSIT_FEE,
-        WITHDRAWAL_FEE
-      ],
-    });
-    console.log("Contract verified successfully");
-  } catch (error) {
-    console.log("Error verifying contract:", error);
-  }
+  // // Verify the contract on Etherscan
+  // console.log("Verifying contract on Etherscan...");
+  // try {
+  //   await run("verify:verify", {
+  //     address: deployedAddress,
+  //     constructorArguments: [
+  //       RESERVE_TOKEN,
+  //       SHARE_TOKEN_NAME,
+  //       SHARE_TOKEN_SYMBOL,
+  //       UNISWAP_ROUTER,
+  //       DEADLINE_OFFSET,
+  //       DEPOSITS_ENABLED, 
+  //       MINIMUM_DEPOSIT,
+  //       SLIPPAGE_TOLERANCE,
+  //       DEPOSIT_FEE,
+  //       WITHDRAWAL_FEE
+  //     ],
+  //   });
+  //   console.log("Contract verified successfully");
+  // } catch (error) {
+  //   console.log("Error verifying contract:", error);
+  // }
 
   // Log all important addresses and parameters
   console.log("\nDeployment Summary:");

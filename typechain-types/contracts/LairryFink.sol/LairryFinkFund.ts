@@ -43,8 +43,8 @@ export interface LairryFinkFundInterface extends Interface {
       | "getSharesOutstanding"
       | "getSlippageTolerance"
       | "getTotalAllocation"
+      | "getWithdrawFeeBalance"
       | "getWithdrawalFee"
-      | "getWithdrawalFeeBalance"
       | "owner"
       | "renounceOwnership"
       | "setAllocation"
@@ -133,11 +133,11 @@ export interface LairryFinkFundInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "getWithdrawalFee",
+    functionFragment: "getWithdrawFeeBalance",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "getWithdrawalFeeBalance",
+    functionFragment: "getWithdrawalFee",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
@@ -252,11 +252,11 @@ export interface LairryFinkFundInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getWithdrawalFee",
+    functionFragment: "getWithdrawFeeBalance",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getWithdrawalFeeBalance",
+    functionFragment: "getWithdrawalFee",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
@@ -464,9 +464,9 @@ export interface LairryFinkFund extends BaseContract {
 
   getTotalAllocation: TypedContractMethod<[], [bigint], "view">;
 
-  getWithdrawalFee: TypedContractMethod<[], [bigint], "view">;
+  getWithdrawFeeBalance: TypedContractMethod<[], [bigint], "view">;
 
-  getWithdrawalFeeBalance: TypedContractMethod<[], [bigint], "view">;
+  getWithdrawalFee: TypedContractMethod<[], [bigint], "view">;
 
   owner: TypedContractMethod<[], [string], "view">;
 
@@ -592,10 +592,10 @@ export interface LairryFinkFund extends BaseContract {
     nameOrSignature: "getTotalAllocation"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
-    nameOrSignature: "getWithdrawalFee"
+    nameOrSignature: "getWithdrawFeeBalance"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
-    nameOrSignature: "getWithdrawalFeeBalance"
+    nameOrSignature: "getWithdrawalFee"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "owner"

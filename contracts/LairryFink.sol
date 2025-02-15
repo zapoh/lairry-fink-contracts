@@ -41,6 +41,9 @@ contract LairryFinkFund is Ownable {
     event Allocation(address indexed tokenAddress, uint256 newAllocation);
     event Deposit(address indexed depositor, uint256 shares, uint256 shareValue);
     event Withdraw(address indexed shareholder, address to, uint256 shares, uint256 shareValue);
+    event LockPeriodUpdated(uint256 newLockPeriod);
+    event SharesLocked(address indexed user, uint256 shares, uint256 unlockTime);
+    event SharesUnlocked(address indexed user, uint256 shares);
 
     uint8 private constant BASIS_POINTS = 4;
 
@@ -90,6 +93,14 @@ contract LairryFinkFund is Ownable {
     uint256 withdrawalFeeBalance;
     uint256 private immutable creationWithdrawalFee;
 
+    struct ShareLock {
+        uint256 shares;
+        uint256 unlockTime;
+    }
+
+    mapping(address => ShareLock[]) private shareLocks;
+    uint256 public lockPeriod;
+
     constructor(
         address _wethAddress,   
         string memory _shareTokenName,
@@ -100,7 +111,8 @@ contract LairryFinkFund is Ownable {
         uint256 _minimumDeposit,
         uint256 _slippageTolerance,
         uint256 _depositFee,
-        uint256 _withdrawalFee
+        uint256 _withdrawalFee,
+        uint256 _lockPeriod
     )
         Ownable(msg.sender)
     {
@@ -119,6 +131,7 @@ contract LairryFinkFund is Ownable {
         creationDepositFee = _depositFee;
         withdrawalFee = _withdrawalFee;
         creationWithdrawalFee = _withdrawalFee;
+        lockPeriod = _lockPeriod;
     }
     function getReserveTokenAddress() public view returns (address) {
         return address(WETH);
@@ -201,7 +214,7 @@ contract LairryFinkFund is Ownable {
         return depositFeeBalance;
     }
 
-    function getWithdrawalFeeBalance() public view returns (uint256) {
+    function getWithdrawFeeBalance() public view returns (uint256) {
     return withdrawalFeeBalance;
 }
 
@@ -286,24 +299,21 @@ contract LairryFinkFund is Ownable {
         );
 
         require(
-        msg.value >= minimumDeposit,
+            msg.value >= minimumDeposit,
             "Deposit amount is less than the minimum deposit."
         );
-   // Wrap ETH to WETH
-        WETH.deposit{value: msg.value}();
- 
+
+        // Calculate shares based on NAV before wrapping new ETH
+        uint256 shares;
+        uint256 netAssetValue;
+        uint256 sharesOutstanding = getSharesOutstanding();
+
         // Determine deposit fee
         uint256 feeMax = 10**BASIS_POINTS;
         uint256 fee = depositFee * msg.value / feeMax;
         uint256 amountLessFee = msg.value - fee;
-        depositFeeBalance += fee;
 
-        // Determine share purchase amount
-        uint256 shares;
-        uint256 netAssetValue;
-        uint256 sharesOutstanding = getSharesOutstanding();
         if (sharesOutstanding == 0) {
-
             uint256 SCALAR = 100_000;
 
             // Initial deposit - establish share price of 1 ETH = 100,000 share
@@ -311,13 +321,16 @@ contract LairryFinkFund is Ownable {
             sharesOutstanding = shares;
             netAssetValue = amountLessFee;
         } else {
-            netAssetValue = getNetAssetValue();
+            netAssetValue = getNetAssetValue();  // This now correctly gets NAV before new deposit
             shares = amountLessFee * sharesOutstanding / netAssetValue;
         }
         require(shares > 0, "You must buy at least one share.");
 
-        // Since we are buying an integer number of shares, there may
-        // be change left over if `amountLessFee / price` has a fractional part.
+        // Now wrap ETH to WETH after share calculation
+        WETH.deposit{value: msg.value}();
+        depositFeeBalance += fee;
+
+        // Calculate change
         uint256 shareValue = shares * netAssetValue / sharesOutstanding;
         uint256 change = amountLessFee - shareValue;
 
@@ -345,10 +358,18 @@ contract LairryFinkFund is Ownable {
             );
         }
 
-        // Mint depositor's purchased shares
-        shareToken.mint(msg.sender, shares);
+        // Create new share lock instead of minting directly to user
+        uint256 unlockTime = block.timestamp + lockPeriod;
+        shareLocks[msg.sender].push(ShareLock({
+            shares: shares,
+            unlockTime: unlockTime
+        }));
+        
+        // Mint shares to contract instead of user
+        shareToken.mint(address(this), shares);
 
         emit Deposit(msg.sender, shares, shareValue);
+        emit SharesLocked(msg.sender, shares, unlockTime);
     }
 
      // Add receive function to handle direct ETH transfers
@@ -356,6 +377,7 @@ contract LairryFinkFund is Ownable {
         // Only accept ETH from WETH contract (for withdrawals)
         require(msg.sender == address(WETH), "Direct ETH transfers not allowed");
     }
+
 
     // Add fallback function to prevent accidental ETH transfers
     fallback() external payable {
@@ -372,17 +394,22 @@ contract LairryFinkFund is Ownable {
     //
     // Emits a {Withdraw} event on success.
         function withdraw(uint256 shares, address payable to) public {
+        uint256 unlockedShares = getUnlockedShares(msg.sender);
+        require(unlockedShares >= shares, "Insufficient unlocked shares");
+        
         uint256 sharesOutstanding = getSharesOutstanding();
         require(sharesOutstanding > 0, "No shares outstanding.");
         require(shares > 0, "You must sell at least one share.");
-        uint256 shareBalance = getShareBalance(msg.sender);
-        require(shareBalance >= shares, "Sell amount is greater than current share balance.");
+        
         uint256 shareValue = shares * getSharePrice();
 
         // Calculate withdrawal fee
         uint256 feeMax = 10**BASIS_POINTS;
         uint256 fee = withdrawalFee * shareValue / feeMax;
         withdrawalFeeBalance += fee;
+
+        // Remove shares from locks
+        removeShares(msg.sender, shares);
 
         // Sell assets first
         IUniswapV2Router02 router = IUniswapV2Router02(uniswapV2Router02Address);
@@ -395,7 +422,7 @@ contract LairryFinkFund is Ownable {
             }
         }
 
-        // Handle WETH portion (remove fee deduction)
+        // Handle WETH portion
         uint256 wethWithdrawalAmount = shares * getReserveTokenBalance() / sharesOutstanding;
         if (wethWithdrawalAmount > 0) {
             WETH.withdraw(wethWithdrawalAmount);
@@ -404,9 +431,10 @@ contract LairryFinkFund is Ownable {
         }
 
         // Burn shares
-        shareToken.burn(msg.sender, shares);
+        shareToken.burn(address(this), shares);
 
         emit Withdraw(msg.sender, to, shares, shareValue - fee);
+        emit SharesUnlocked(msg.sender, shares);
     }
 
     // Set the pool's allocation for the asset specified by `tokenAddress`.
@@ -580,6 +608,47 @@ function _sell(IUniswapV2Router02 router, address tokenAddress, uint256 amount, 
         to,
         block.timestamp + deadlineOffset
     );
+    }
+
+    function getUnlockedShares(address user) public view returns (uint256) {
+        uint256 total = 0;
+        for (uint256 i = 0; i < shareLocks[user].length; i++) {
+            if (block.timestamp >= shareLocks[user][i].unlockTime) {
+                total += shareLocks[user][i].shares;
+            }
+        }
+        return total;
+    }
+
+    function removeShares(address user, uint256 sharesToRemove) internal {
+        uint256 remaining = sharesToRemove;
+        for (uint256 i = 0; i < shareLocks[user].length && remaining > 0; i++) {
+            if (block.timestamp >= shareLocks[user][i].unlockTime) {
+                if (shareLocks[user][i].shares <= remaining) {
+                    remaining -= shareLocks[user][i].shares;
+                    shareLocks[user][i] = shareLocks[user][shareLocks[user].length - 1];
+                    shareLocks[user].pop();
+                    i--;
+                } else {
+                    shareLocks[user][i].shares -= remaining;
+                    remaining = 0;
+                }
+            }
+        }
+        require(remaining == 0, "Not enough unlocked shares");
+    }
+
+    function getShareLocks(address user) external view returns (ShareLock[] memory) {
+        return shareLocks[user];
+    }
+
+    function getLockPeriod() external view returns (uint256) {
+        return lockPeriod;
+    }
+
+    function setLockPeriod(uint256 _lockPeriod) external onlyOwner {
+        lockPeriod = _lockPeriod;
+        emit LockPeriodUpdated(_lockPeriod);
     }
 }
 
