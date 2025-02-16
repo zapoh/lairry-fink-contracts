@@ -622,13 +622,12 @@ function _sell(IUniswapV2Router02 router, address tokenAddress, uint256 amount, 
 
     function removeShares(address user, uint256 sharesToRemove) internal {
         uint256 remaining = sharesToRemove;
+        // First pass: reduce shares from locks without removing them
         for (uint256 i = 0; i < shareLocks[user].length && remaining > 0; i++) {
             if (block.timestamp >= shareLocks[user][i].unlockTime) {
                 if (shareLocks[user][i].shares <= remaining) {
                     remaining -= shareLocks[user][i].shares;
-                    shareLocks[user][i] = shareLocks[user][shareLocks[user].length - 1];
-                    shareLocks[user].pop();
-                    i--;
+                    shareLocks[user][i].shares = 0;
                 } else {
                     shareLocks[user][i].shares -= remaining;
                     remaining = 0;
@@ -636,6 +635,14 @@ function _sell(IUniswapV2Router02 router, address tokenAddress, uint256 amount, 
             }
         }
         require(remaining == 0, "Not enough unlocked shares");
+
+        // Second pass: remove empty locks
+        for (uint256 i = shareLocks[user].length; i > 0; i--) {
+            if (shareLocks[user][i-1].shares == 0) {
+                shareLocks[user][i-1] = shareLocks[user][shareLocks[user].length - 1];
+                shareLocks[user].pop();
+            }
+        }
     }
 
     function getShareLocks(address user) external view returns (ShareLock[] memory) {
@@ -649,6 +656,14 @@ function _sell(IUniswapV2Router02 router, address tokenAddress, uint256 amount, 
     function setLockPeriod(uint256 _lockPeriod) external onlyOwner {
         lockPeriod = _lockPeriod;
         emit LockPeriodUpdated(_lockPeriod);
+    }
+
+    function getTotalShares(address user) public view returns (uint256) {
+        uint256 total = 0;
+        for (uint256 i = 0; i < shareLocks[user].length; i++) {
+            total += shareLocks[user][i].shares;
+        }
+        return total;
     }
 }
 

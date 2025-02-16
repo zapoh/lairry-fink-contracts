@@ -15,7 +15,7 @@ async function main() {
   const SLIPPAGE_TOLERANCE = 200; // 2%
   const DEPOSIT_FEE = 100; // 1%
   const WITHDRAWAL_FEE = 100; // 1%
-
+  const LOCK_PERIOD = 60; // 1 minute
   console.log("Deploying LairryFink Fund to Sepolia...");
 
   // Deploy the contract
@@ -29,7 +29,8 @@ async function main() {
     MINIMUM_DEPOSIT,
     SLIPPAGE_TOLERANCE,
     DEPOSIT_FEE,
-    WITHDRAWAL_FEE
+    WITHDRAWAL_FEE,
+    LOCK_PERIOD
   ]);
 
   await lairryFink.waitForDeployment();

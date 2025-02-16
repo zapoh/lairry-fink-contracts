@@ -23,6 +23,18 @@ import type {
   TypedContractMethod,
 } from "../../common";
 
+export declare namespace LairryFinkFund {
+  export type ShareLockStruct = {
+    shares: BigNumberish;
+    unlockTime: BigNumberish;
+  };
+
+  export type ShareLockStructOutput = [shares: bigint, unlockTime: bigint] & {
+    shares: bigint;
+    unlockTime: bigint;
+  };
+}
+
 export interface LairryFinkFundInterface extends Interface {
   getFunction(
     nameOrSignature:
@@ -32,25 +44,31 @@ export interface LairryFinkFundInterface extends Interface {
       | "getDepositFee"
       | "getDepositFeeBalance"
       | "getDepositsEnabled"
+      | "getLockPeriod"
       | "getMinimumDeposit"
       | "getNetAssetValue"
       | "getPortfolio"
       | "getReserveTokenAddress"
       | "getReserveTokenBalance"
       | "getShareBalance"
+      | "getShareLocks"
       | "getSharePrice"
       | "getShareTokenAddress"
       | "getSharesOutstanding"
       | "getSlippageTolerance"
       | "getTotalAllocation"
+      | "getTotalShares"
+      | "getUnlockedShares"
       | "getWithdrawFeeBalance"
       | "getWithdrawalFee"
+      | "lockPeriod"
       | "owner"
       | "renounceOwnership"
       | "setAllocation"
       | "setDeadlineOffset"
       | "setDepositFee"
       | "setDepositsEnabled"
+      | "setLockPeriod"
       | "setMinimumDeposit"
       | "setSlippageTolerance"
       | "setWithdrawalFee"
@@ -63,7 +81,10 @@ export interface LairryFinkFundInterface extends Interface {
     nameOrSignatureOrTopic:
       | "Allocation"
       | "Deposit"
+      | "LockPeriodUpdated"
       | "OwnershipTransferred"
+      | "SharesLocked"
+      | "SharesUnlocked"
       | "Withdraw"
   ): EventFragment;
 
@@ -86,6 +107,10 @@ export interface LairryFinkFundInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getDepositsEnabled",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getLockPeriod",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -113,6 +138,10 @@ export interface LairryFinkFundInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "getShareLocks",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getSharePrice",
     values?: undefined
   ): string;
@@ -133,11 +162,23 @@ export interface LairryFinkFundInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "getTotalShares",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getUnlockedShares",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getWithdrawFeeBalance",
     values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "getWithdrawalFee",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "lockPeriod",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
@@ -160,6 +201,10 @@ export interface LairryFinkFundInterface extends Interface {
   encodeFunctionData(
     functionFragment: "setDepositsEnabled",
     values: [boolean]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setLockPeriod",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "setMinimumDeposit",
@@ -208,6 +253,10 @@ export interface LairryFinkFundInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getLockPeriod",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getMinimumDeposit",
     data: BytesLike
   ): Result;
@@ -232,6 +281,10 @@ export interface LairryFinkFundInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getShareLocks",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getSharePrice",
     data: BytesLike
   ): Result;
@@ -252,6 +305,14 @@ export interface LairryFinkFundInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getTotalShares",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getUnlockedShares",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getWithdrawFeeBalance",
     data: BytesLike
   ): Result;
@@ -259,6 +320,7 @@ export interface LairryFinkFundInterface extends Interface {
     functionFragment: "getWithdrawalFee",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "lockPeriod", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
@@ -278,6 +340,10 @@ export interface LairryFinkFundInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setDepositsEnabled",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setLockPeriod",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -341,12 +407,55 @@ export namespace DepositEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
+export namespace LockPeriodUpdatedEvent {
+  export type InputTuple = [newLockPeriod: BigNumberish];
+  export type OutputTuple = [newLockPeriod: bigint];
+  export interface OutputObject {
+    newLockPeriod: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
 export namespace OwnershipTransferredEvent {
   export type InputTuple = [previousOwner: AddressLike, newOwner: AddressLike];
   export type OutputTuple = [previousOwner: string, newOwner: string];
   export interface OutputObject {
     previousOwner: string;
     newOwner: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace SharesLockedEvent {
+  export type InputTuple = [
+    user: AddressLike,
+    shares: BigNumberish,
+    unlockTime: BigNumberish
+  ];
+  export type OutputTuple = [user: string, shares: bigint, unlockTime: bigint];
+  export interface OutputObject {
+    user: string;
+    shares: bigint;
+    unlockTime: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace SharesUnlockedEvent {
+  export type InputTuple = [user: AddressLike, shares: BigNumberish];
+  export type OutputTuple = [user: string, shares: bigint];
+  export interface OutputObject {
+    user: string;
+    shares: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -434,6 +543,8 @@ export interface LairryFinkFund extends BaseContract {
 
   getDepositsEnabled: TypedContractMethod<[], [boolean], "view">;
 
+  getLockPeriod: TypedContractMethod<[], [bigint], "view">;
+
   getMinimumDeposit: TypedContractMethod<[], [bigint], "view">;
 
   getNetAssetValue: TypedContractMethod<[], [bigint], "view">;
@@ -454,6 +565,12 @@ export interface LairryFinkFund extends BaseContract {
     "view"
   >;
 
+  getShareLocks: TypedContractMethod<
+    [user: AddressLike],
+    [LairryFinkFund.ShareLockStructOutput[]],
+    "view"
+  >;
+
   getSharePrice: TypedContractMethod<[], [bigint], "view">;
 
   getShareTokenAddress: TypedContractMethod<[], [string], "view">;
@@ -464,9 +581,15 @@ export interface LairryFinkFund extends BaseContract {
 
   getTotalAllocation: TypedContractMethod<[], [bigint], "view">;
 
+  getTotalShares: TypedContractMethod<[user: AddressLike], [bigint], "view">;
+
+  getUnlockedShares: TypedContractMethod<[user: AddressLike], [bigint], "view">;
+
   getWithdrawFeeBalance: TypedContractMethod<[], [bigint], "view">;
 
   getWithdrawalFee: TypedContractMethod<[], [bigint], "view">;
+
+  lockPeriod: TypedContractMethod<[], [bigint], "view">;
 
   owner: TypedContractMethod<[], [string], "view">;
 
@@ -492,6 +615,12 @@ export interface LairryFinkFund extends BaseContract {
 
   setDepositsEnabled: TypedContractMethod<
     [_depositsEnabled: boolean],
+    [void],
+    "nonpayable"
+  >;
+
+  setLockPeriod: TypedContractMethod<
+    [_lockPeriod: BigNumberish],
     [void],
     "nonpayable"
   >;
@@ -555,6 +684,9 @@ export interface LairryFinkFund extends BaseContract {
     nameOrSignature: "getDepositsEnabled"
   ): TypedContractMethod<[], [boolean], "view">;
   getFunction(
+    nameOrSignature: "getLockPeriod"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
     nameOrSignature: "getMinimumDeposit"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
@@ -577,6 +709,13 @@ export interface LairryFinkFund extends BaseContract {
     nameOrSignature: "getShareBalance"
   ): TypedContractMethod<[shareholder: AddressLike], [bigint], "view">;
   getFunction(
+    nameOrSignature: "getShareLocks"
+  ): TypedContractMethod<
+    [user: AddressLike],
+    [LairryFinkFund.ShareLockStructOutput[]],
+    "view"
+  >;
+  getFunction(
     nameOrSignature: "getSharePrice"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
@@ -592,10 +731,19 @@ export interface LairryFinkFund extends BaseContract {
     nameOrSignature: "getTotalAllocation"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
+    nameOrSignature: "getTotalShares"
+  ): TypedContractMethod<[user: AddressLike], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "getUnlockedShares"
+  ): TypedContractMethod<[user: AddressLike], [bigint], "view">;
+  getFunction(
     nameOrSignature: "getWithdrawFeeBalance"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "getWithdrawalFee"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "lockPeriod"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "owner"
@@ -619,6 +767,9 @@ export interface LairryFinkFund extends BaseContract {
   getFunction(
     nameOrSignature: "setDepositsEnabled"
   ): TypedContractMethod<[_depositsEnabled: boolean], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "setLockPeriod"
+  ): TypedContractMethod<[_lockPeriod: BigNumberish], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "setMinimumDeposit"
   ): TypedContractMethod<[_minimumDeposit: BigNumberish], [void], "nonpayable">;
@@ -665,11 +816,32 @@ export interface LairryFinkFund extends BaseContract {
     DepositEvent.OutputObject
   >;
   getEvent(
+    key: "LockPeriodUpdated"
+  ): TypedContractEvent<
+    LockPeriodUpdatedEvent.InputTuple,
+    LockPeriodUpdatedEvent.OutputTuple,
+    LockPeriodUpdatedEvent.OutputObject
+  >;
+  getEvent(
     key: "OwnershipTransferred"
   ): TypedContractEvent<
     OwnershipTransferredEvent.InputTuple,
     OwnershipTransferredEvent.OutputTuple,
     OwnershipTransferredEvent.OutputObject
+  >;
+  getEvent(
+    key: "SharesLocked"
+  ): TypedContractEvent<
+    SharesLockedEvent.InputTuple,
+    SharesLockedEvent.OutputTuple,
+    SharesLockedEvent.OutputObject
+  >;
+  getEvent(
+    key: "SharesUnlocked"
+  ): TypedContractEvent<
+    SharesUnlockedEvent.InputTuple,
+    SharesUnlockedEvent.OutputTuple,
+    SharesUnlockedEvent.OutputObject
   >;
   getEvent(
     key: "Withdraw"
@@ -702,6 +874,17 @@ export interface LairryFinkFund extends BaseContract {
       DepositEvent.OutputObject
     >;
 
+    "LockPeriodUpdated(uint256)": TypedContractEvent<
+      LockPeriodUpdatedEvent.InputTuple,
+      LockPeriodUpdatedEvent.OutputTuple,
+      LockPeriodUpdatedEvent.OutputObject
+    >;
+    LockPeriodUpdated: TypedContractEvent<
+      LockPeriodUpdatedEvent.InputTuple,
+      LockPeriodUpdatedEvent.OutputTuple,
+      LockPeriodUpdatedEvent.OutputObject
+    >;
+
     "OwnershipTransferred(address,address)": TypedContractEvent<
       OwnershipTransferredEvent.InputTuple,
       OwnershipTransferredEvent.OutputTuple,
@@ -711,6 +894,28 @@ export interface LairryFinkFund extends BaseContract {
       OwnershipTransferredEvent.InputTuple,
       OwnershipTransferredEvent.OutputTuple,
       OwnershipTransferredEvent.OutputObject
+    >;
+
+    "SharesLocked(address,uint256,uint256)": TypedContractEvent<
+      SharesLockedEvent.InputTuple,
+      SharesLockedEvent.OutputTuple,
+      SharesLockedEvent.OutputObject
+    >;
+    SharesLocked: TypedContractEvent<
+      SharesLockedEvent.InputTuple,
+      SharesLockedEvent.OutputTuple,
+      SharesLockedEvent.OutputObject
+    >;
+
+    "SharesUnlocked(address,uint256)": TypedContractEvent<
+      SharesUnlockedEvent.InputTuple,
+      SharesUnlockedEvent.OutputTuple,
+      SharesUnlockedEvent.OutputObject
+    >;
+    SharesUnlocked: TypedContractEvent<
+      SharesUnlockedEvent.InputTuple,
+      SharesUnlockedEvent.OutputTuple,
+      SharesUnlockedEvent.OutputObject
     >;
 
     "Withdraw(address,address,uint256,uint256)": TypedContractEvent<
