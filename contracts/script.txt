@@ -1,6 +1,6 @@
 npx hardhat console --network sepolia
 const LairryFink = await ethers.getContractFactory("LairryFinkFund")
-const fund = await LairryFink.attach("0xDF2eFbA72449ff739A570c1D9521B2Ee4880Fe0c")
+const fund = await LairryFink.attach("0x25D19eE180a50a7Aa24B1f0f36F7b5Ce7963a51D")
 const USDC = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"
 const UNI = "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"
 await fund.setAllocation(UNI, 200)
