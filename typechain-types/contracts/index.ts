@@ -3,9 +3,8 @@
 /* eslint-disable */
 import type * as dtfSol from "./Dtf.sol";
 export type { dtfSol };
-import type * as dtfFactoryFullSol from "./DtfFactoryFull.sol";
-export type { dtfFactoryFullSol };
 import type * as iDtfSol from "./IDtf.sol";
 export type { iDtfSol };
+export type { DtfFactory } from "./DtfFactory";
 export type { FundBytecode } from "./FundBytecode";
 export type { TestToken } from "./TestToken";
