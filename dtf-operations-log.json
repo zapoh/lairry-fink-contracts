@@ -1,0 +1,75 @@
+[
+  {
+    "type": "create_fund",
+    "wallet": "0xf147F302C653171a85552C9552703f51c6b1Ff7B",
+    "fund": "0xa4C4d7797EC8dBa525503eB4a160989830A5b5a2",
+    "params": {
+      "shareName": "Test Fund 1",
+      "shareSymbol": "TF1",
+      "depositsEnabled": true,
+      "minimumDeposit": "19925741265854092",
+      "slippageTolerance": 218,
+      "depositFee": 124,
+      "withdrawalFee": 98
+    },
+    "timestamp": "2025-03-14T06:54:08.711Z"
+  },
+  {
+    "type": "deposit",
+    "wallet": "0xA1c2eA8408a94834c1F05B76227e58E19cd1419C",
+    "fund": "0xa4C4d7797EC8dBa525503eB4a160989830A5b5a2",
+    "amount": "9771764565526779612",
+    "timestamp": "2025-03-14T06:54:09.724Z"
+  },
+  {
+    "type": "deposit",
+    "wallet": "0xA1c2eA8408a94834c1F05B76227e58E19cd1419C",
+    "fund": "0xa4C4d7797EC8dBa525503eB4a160989830A5b5a2",
+    "amount": "6430132348544563704",
+    "timestamp": "2025-03-14T06:54:09.966Z"
+  },
+  {
+    "type": "transfer_ownership",
+    "from": "0xf147F302C653171a85552C9552703f51c6b1Ff7B",
+    "to": "0xA0F7f942e48A33DF87809A875F0a68DcA4E69a56",
+    "fund": "0xa4C4d7797EC8dBa525503eB4a160989830A5b5a2",
+    "timestamp": "2025-03-14T06:54:11.020Z"
+  },
+  {
+    "type": "create_fund",
+    "wallet": "0xA0F7f942e48A33DF87809A875F0a68DcA4E69a56",
+    "fund": "0x2DDC7E2E13a5Ba55273D6F92157508e7C4903470",
+    "params": {
+      "shareName": "Test Fund 2",
+      "shareSymbol": "TF2",
+      "depositsEnabled": true,
+      "minimumDeposit": "93941258254727433",
+      "slippageTolerance": 249,
+      "depositFee": 114,
+      "withdrawalFee": 53
+    },
+    "timestamp": "2025-03-14T06:55:12.256Z"
+  },
+  {
+    "type": "deposit",
+    "wallet": "0xf147F302C653171a85552C9552703f51c6b1Ff7B",
+    "fund": "0x2DDC7E2E13a5Ba55273D6F92157508e7C4903470",
+    "amount": "4924257043516444110",
+    "timestamp": "2025-03-14T06:55:13.012Z"
+  },
+  {
+    "type": "deposit",
+    "wallet": "0xf147F302C653171a85552C9552703f51c6b1Ff7B",
+    "fund": "0x2DDC7E2E13a5Ba55273D6F92157508e7C4903470",
+    "amount": "4199229661778929756",
+    "timestamp": "2025-03-14T06:55:13.180Z"
+  },
+  {
+    "type": "withdraw_fees",
+    "wallet": "0xA0F7f942e48A33DF87809A875F0a68DcA4E69a56",
+    "fund": "0xa4C4d7797EC8dBa525503eB4a160989830A5b5a2",
+    "amount": "102460796084587174",
+    "percentage": 51,
+    "timestamp": "2025-03-14T06:55:13.808Z"
+  }
+]

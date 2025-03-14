@@ -1,0 +1,16 @@
+{
+  "address": "0x96de70b0dbd9ca19c76CB55aE5FE17B29480b386",
+  "creator": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "name": "My Diversified Token Fund",
+  "symbol": "MDTF",
+  "createdAt": 1741839181,
+  "transactionHash": "0x6a889d546aabdfb95053200178b2135a73fae9023969b23349499981ce223314",
+  "blockNumber": 19000008,
+  "parameters": {
+    "depositsEnabled": true,
+    "minimumDeposit": "10000000000000000",
+    "slippageTolerance": 200,
+    "depositFee": 100,
+    "withdrawalFee": 100
+  }
+}
